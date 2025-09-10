@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Exercícios de Português - Substantivos</title>
+  <style>
+    :root{--bg:#f8fafc;--card:#ffffff;--ink:#0f172a;--muted:#475569;--ok:#16a34a;--bad:#dc2626;--accent:#2563eb}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif}
+    .wrap{max-width:980px;margin:24px auto;padding:0 16px}
+    h1{font-size:clamp(22px,4vw,34px);margin:12px 0 6px}
+    p{color:var(--muted)}
+    .bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
+    button{border:0;background:var(--accent);color:#fff;padding:10px 14px;border-radius:14px;cursor:pointer;font-weight:700;box-shadow:0 6px 14px rgba(37,99,235,.2)}
+    button.secondary{background:#0ea5e9}
+    button.print{background:#64748b}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+    .card{background:var(--card);border-radius:18px;box-shadow:0 6px 20px rgba(2,6,23,.08);padding:14px}
+    .q{font-weight:700;margin-bottom:8px}
+    .answer{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .word{padding:6px 10px;border-radius:10px;border:1px solid #cbd5e1;cursor:pointer;background:#f1f5f9}
+    .word.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .msg{height:20px;font-size:12px;margin-top:6px}
+    .ok{color:var(--ok)}
+    .bad{color:var(--bad)}
+    .muted{color:var(--muted)}
+
+    @media print{
+      .bar{display:none}
+      .card{break-inside:avoid;box-shadow:none;border:1px solid #e2e8f0}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Exercícios de Português – Substantivos</h1>
+    <p>Clique nos <strong>substantivos</strong> em cada frase. Serão mostradas <strong>10</strong> questões por vez. Use "Gerar novos exercícios" para ver mais.</p>
+
+    <div class="bar">
+      <button id="regen">Gerar novos exercícios</button>
+      <button id="checkAll" class="secondary">Conferir tudo</button>
+      <button id="print" class="print">Imprimir</button>
+    </div>
+
+    <div id="grid" class="grid"></div>
+  </div>
+
+  <script>
+    // Banco com > 50 frases (70 no total)
+    const SENTENCES = [
+      {f:"O cachorro correu pelo quintal.", a:["cachorro","quintal"]},
+      {f:"A menina levou a mochila para a escola.", a:["menina","mochila","escola"]},
+      {f:"O gato dorme no sofá.", a:["gato","sofá"]},
+      {f:"O pássaro pousou na árvore.", a:["pássaro","árvore"]},
+      {f:"O professor escreveu no quadro.", a:["professor","quadro"]},
+      {f:"A mãe preparou o almoço.", a:["mãe","almoço"]},
+      {f:"O pai consertou a porta.", a:["pai","porta"]},
+      {f:"A criança brincou no parque.", a:["criança","parque"]},
+      {f:"O carro parou no sinal.", a:["carro","sinal"]},
+      {f:"A bicicleta ficou na garagem.", a:["bicicleta","garagem"]},
+      {f:"O livro está na mesa.", a:["livro","mesa"]},
+      {f:"A chuva molhou a rua.", a:["chuva","rua"]},
+      {f:"O sol apareceu cedo.", a:["sol"]},
+      {f:"A lua iluminou a noite.", a:["lua","noite"]},
+      {f:"O sapato novo está na caixa.", a:["sapato","caixa"]},
+      {f:"A bola quicou no chão.", a:["bola","chão"]},
+      {f:"O time ganhou o jogo.", a:["time","jogo"]},
+      {f:"A professora chamou o aluno.", a:["professora","aluno"]},
+      {f:"O mercado abriu cedo.", a:["mercado"]},
+      {f:"A padaria vende pão quente.", a:["padaria","pão"]},
+      {f:"O cachorro latiu para o carteiro.", a:["cachorro","carteiro"]},
+      {f:"A formiga carregou a folha.", a:["formiga","folha"]},
+      {f:"O peixe nadou no aquário.", a:["peixe","aquário"]},
+      {f:"A tartaruga atravessou a estrada.", a:["tartaruga","estrada"]},
+      {f:"O ônibus chegou ao ponto.", a:["ônibus","ponto"]},
+      {f:"A janela estava aberta.", a:["janela"]},
+      {f:"O relógio marcou três horas.", a:["relógio","horas"]},
+      {f:"A porta fez barulho.", a:["porta","barulho"]},
+      {f:"O computador travou na tela.", a:["computador","tela"]},
+      {f:"A cadeira quebrou o pé.", a:["cadeira","pé"]},
+      {f:"O caderno caiu no chão.", a:["caderno","chão"]},
+      {f:"A geladeira ficou vazia.", a:["geladeira"]},
+      {f:"O fogão ficou limpo.", a:["fogão"]},
+      {f:"A televisão mostrou o desenho.", a:["televisão","desenho"]},
+      {f:"O brinquedo caiu da prateleira.", a:["brinquedo","prateleira"]},
+      {f:"A boneca perdeu o sapato.", a:["boneca","sapato"]},
+      {f:"O lápis quebrou a ponta.", a:["lápis","ponta"]},
+      {f:"A borracha sumiu da mesa.", a:["borracha","mesa"]},
+      {f:"O parque tem árvores altas.", a:["parque","árvores"]},
+      {f:"A praia tinha ondas pequenas.", a:["praia","ondas"]},
+      {f:"O rio cortava a cidade.", a:["rio","cidade"]},
+      {f:"A montanha fica longe.", a:["montanha"]},
+      {f:"O campo tinha flores.", a:["campo","flores"]},
+      {f:"A feira vende frutas.", a:["feira","frutas"]},
+      {f:"O médico atendeu o paciente.", a:["médico","paciente"]},
+      {f:"A enfermeira trouxe a receita.", a:["enfermeira","receita"]},
+      {f:"O dentista marcou a consulta.", a:["dentista","consulta"]},
+      {f:"A farmácia abriu tarde.", a:["farmácia"]},
+      {f:"O vizinho pintou o muro.", a:["vizinho","muro"]},
+      {f:"A árvore cresceu no jardim.", a:["árvore","jardim"]},
+      {f:"O passarinho cantou na janela.", a:["passarinho","janela"]},
+      {f:"A abelha pousou na flor.", a:["abelha","flor"]},
+      {f:"O macaco pulou na pedra.", a:["macaco","pedra"]},
+      {f:"A cobra atravessou o caminho.", a:["cobra","caminho"]},
+      {f:"O leão rugiu no zoológico.", a:["leão","zoológico"]},
+      {f:"A girafa comeu folhas verdes.", a:["girafa","folhas"]},
+      {f:"O avião voou alto no céu.", a:["avião","céu"]},
+      {f:"A nuvem tapou o sol.", a:["nuvem","sol"]},
+      {f:"O navio entrou no porto.", a:["navio","porto"]},
+      {f:"A lancha parou no píer.", a:["lancha","píer"]},
+      {f:"O trem chegou à estação.", a:["trem","estação"]},
+      {f:"A escola organizou a festa.", a:["escola","festa"]},
+      {f:"O diretor fez um anúncio.", a:["diretor","anúncio"]},
+      {f:"A biblioteca empresta livros.", a:["biblioteca","livros"]},
+      {f:"O museu abriu a exposição.", a:["museu","exposição"]},
+      {f:"A música tocou no rádio.", a:["música","rádio"]},
+      {f:"O artista pintou o quadro.", a:["artista","quadro"]},
+      {f:"A cozinheira lavou a louça.", a:["cozinheira","louça"]},
+      {f:"O pedreiro construiu a parede.", a:["pedreiro","parede"]},
+      {f:"A costureira arrumou a camisa.", a:["costureira","camisa"]}
+    ];
+
+    function sample(arr, n){
+      const copy=[...arr];
+      // embaralha Fisher–Yates
+      for(let i=copy.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [copy[i],copy[j]]=[copy[j],copy[i]];
+      }
+      return copy.slice(0,n);
+    }
+
+    function tokenize(sentence){
+      return sentence.replace(/[.,!?;:()\"']/g,'').split(/\s+/);
+    }
+
+    function render(){
+      const grid=document.getElementById('grid');
+      grid.innerHTML='';
+      const qs=sample(SENTENCES,10);
+      qs.forEach((q,i)=>{
+        const card=document.createElement('div');
+        card.className='card';
+        const words=tokenize(q.f);
+        card.innerHTML=`<div class="q">${i+1}. ${q.f}</div>`;
+        const answer=document.createElement('div');
+        answer.className='answer';
+        words.forEach(w=>{
+          const span=document.createElement('span');
+          span.textContent=w;
+          span.className='word';
+          span.addEventListener('click',()=>{
+            span.classList.toggle('selected');
+          });
+          answer.appendChild(span);
+        });
+        const btn=document.createElement('button');
+        btn.textContent='Conferir';
+        btn.addEventListener('click',()=>{
+          const selected=[...answer.querySelectorAll('.word.selected')].map(el=>el.textContent.toLowerCase());
+          const ans=q.a.map(x=>x.toLowerCase());
+          const hasAll=ans.every(a=>selected.includes(a));
+          const noExtra=selected.filter(s=>!ans.includes(s)).length===0;
+          const msg=card.querySelector('.msg');
+          if(hasAll && noExtra && selected.length===ans.length){
+            msg.textContent='✔ Correto!'; msg.className='msg ok';
+          } else {
+            msg.textContent='✘ Revise sua resposta'; msg.className='msg bad';
+          }
+        });
+        card.appendChild(answer);
+        card.appendChild(btn);
+        const msg=document.createElement('div');
+        msg.className='msg';
+        card.appendChild(msg);
+        grid.appendChild(card);
+      });
+    }
+
+    document.getElementById('regen').addEventListener('click',render);
+    document.getElementById('checkAll').addEventListener('click',()=>{
+      document.querySelectorAll('.card button').forEach(b=>b.click());
+    });
+    document.getElementById('print').addEventListener('click',()=>window.print());
+
+    render();
+  </script>
+</body>
+</html>
